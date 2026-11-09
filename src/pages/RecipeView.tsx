@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useOnline, useRecipe } from '../lib/hooks';
 import { deleteRecipe, makeOffline, removeOffline, saveRecipe } from '../lib/db';
-import { navigate } from '../lib/router';
+import { goBack, navigate } from '../lib/router';
+import { ConfirmButton } from '../components/ConfirmButton';
 import { Icon } from '../components/Icon';
 import { CreditedImage, CreditLine } from '../components/Credit';
 import { StartTimerButton } from '../components/TimerViews';
@@ -17,7 +18,7 @@ export function BackBar({ title, to = '/', right }: { title?: string; to?: strin
     <div className="backbar">
       <button
         className="icon-btn"
-        onClick={() => (history.length > 1 ? history.back() : navigate(to))}
+        onClick={() => goBack(to)}
         aria-label={t('back')}
       >
         <Icon name="back" />
@@ -35,15 +36,14 @@ export function OfflineButton({ recipe }: { recipe: Recipe }) {
   const t = useT();
   if (recipe.offlineAt)
     return (
-      <button
+      <ConfirmButton
         className="btn ok"
-        onClick={async () => {
-          if (confirm('Remove the offline copy of this recipe’s images? The recipe itself stays on this device.')) await removeOffline(recipe.id);
-        }}
-        aria-label="Saved for offline. Tap to remove offline copy"
+        onConfirm={() => removeOffline(recipe.id)}
+        confirmLabel={t('removeOfflineConfirm')}
+        ariaLabel="Saved for offline. Tap twice to remove the offline copy"
       >
         <Icon name="check" /> {t('savedOffline')}
-      </button>
+      </ConfirmButton>
     );
   return (
     <>
@@ -220,17 +220,16 @@ export function RecipeView({ id }: { id: string }) {
         </section>
       )}
 
-      <button
+      <ConfirmButton
         className="btn danger ghost"
-        onClick={async () => {
-          if (confirm(`Delete “${recipe.title}”? This can't be undone.`)) {
-            await deleteRecipe(recipe.id);
-            navigate('/', true);
-          }
+        onConfirm={async () => {
+          await deleteRecipe(recipe.id);
+          navigate('/', true);
         }}
+        confirmLabel={t('deleteConfirm')}
       >
         <Icon name="trash" /> {t('deleteRecipe')}
-      </button>
+      </ConfirmButton>
       {narrate && <NarrateSheet recipe={raw} onClose={() => setNarrate(false)} />}
     </div>
   );

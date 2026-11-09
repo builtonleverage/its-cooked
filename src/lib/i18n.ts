@@ -64,6 +64,8 @@ const dict = {
   notes: ['Notes', 'नोट्स'],
   imageCredits: ['Image credits', 'चित्र श्रेय'],
   deleteRecipe: ['Delete recipe', 'रेसिपी हटाएँ'],
+  deleteConfirm: ['Tap again to delete for good', 'हमेशा के लिए हटाने को फिर टैप करें'],
+  removeOfflineConfirm: ['Tap again to remove offline copy', 'ऑफ़लाइन कॉपी हटाने को फिर टैप करें'],
   start: ['Start', 'शुरू'],
   checkAt: ['check at {t}', '{t} पर जाँचें'],
   stepOf: ['Step {n} of {total}', 'चरण {n} / {total}'],

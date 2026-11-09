@@ -96,7 +96,7 @@ export function SettingsPage() {
       <section>
         <h2>Backup</h2>
         <div className="row wrap">
-          <button
+          {!__ARTIFACT__ && <button
             className="btn"
             onClick={async () => {
               const blob = new Blob([await exportAll()], { type: 'application/json' });
@@ -108,7 +108,7 @@ export function SettingsPage() {
             }}
           >
             <Icon name="share" /> Export recipes
-          </button>
+          </button>}
           <button className="btn" onClick={() => file.current?.click()}>
             <Icon name="download" /> Import
           </button>

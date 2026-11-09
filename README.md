@@ -25,6 +25,16 @@ Your recipes stay on your device.
   - The image search uses **Wikimedia Commons** and **Openverse** (no API keys needed).
   - Only CC0, Public Domain, CC BY and CC BY-SA results are shown. Non-free, NC and ND images are filtered out.
   - The title, author, licence and source link are saved with each image, shown under it, and listed in an "Image credits" section on each recipe.
+- **English ⇄ हिंदी**:
+  - One tap on the **हिं / EN** button switches the whole app and your recipes to Hindi.
+  - The seed recipe has a hand-written Hindi version.
+  - Your own recipes can be translated with one tap. This uses Chrome's on-device Translator where available; otherwise it uses the free MyMemory API. Translations are saved on the device, so they work offline, and you're told when a recipe has changed since it was translated. Timer timings are never touched by translation.
+- **AI voice guide**:
+  - On a recipe or in Cook Mode, tap **AI voice guide** and pick ChatGPT, Claude, Gemini, Copilot or Perplexity.
+  - The app builds a ready-made prompt for that recipe, copies it to the clipboard and opens the app. ChatGPT, Claude and Perplexity get the prompt pre-filled; for the others you paste it.
+  - You choose the narration language (English, Hindi or Hinglish) and the style (step by step and waits for "next", read it all, or tips and coaching). In Cook Mode it starts from the step you're on.
+  - Then turn on that app's voice mode for a spoken, hands-free walkthrough.
+  - **Read step aloud** in Cook Mode uses the phone's own voices (Hindi or English) and needs no app.
 - **Seed recipe**: *Onion Tandoori Paratha (Electric Tandoor)*. It comes with a preheat timer (15 min, checked at 10), a 20 min dough rest and an 8 min bake per batch (checked at 4 and 6 min). It includes diabetic-friendly and low-salt notes and a stuffing diagram. Its illustrations are original CC0 SVGs bundled with the app.
 - **Other**:
   - Warm, accessible UI with light, dark and system themes.
@@ -60,6 +70,7 @@ npm run dev        # http://localhost:5173
 npm test           # timer engine + duration parser tests
 npm run build      # type-check + production build into dist/
 npm run preview    # serve the production build (service worker active)
+npm run build:artifact  # one self-contained HTML file in dist-artifact/ (no service worker), handy for sharing a demo
 ```
 
 The service worker only runs in the production build (`npm run build && npm run preview`).
@@ -67,9 +78,21 @@ To test on a phone on your local network, run `npm run preview -- --host`. Notif
 
 ## Deploy (free)
 
-**GitHub Pages**: the included workflow `.github/workflows/deploy.yml` builds and publishes on every push to `main`.
-1. Repo **Settings → Pages → Source: GitHub Actions**.
-2. Push to `main`. The app will be at `https://builtonleverage.github.io/its-cooked/`.
+**Cloudflare Pages (recommended)**. Pick one of these:
+- *No tokens, simplest:*
+  1. In the Cloudflare dashboard go to **Workers & Pages → Create → Pages → Connect to Git** and pick `builtonleverage/its-cooked`.
+  2. Set the build command to `npm run build` and the output directory to `dist`. No env vars are needed.
+  3. Every push to `main` deploys to `https://its-cooked.pages.dev`, and every PR gets a preview URL.
+- *GitHub Action:* `.github/workflows/cloudflare-pages.yml` deploys `main` to production and PRs to previews. Add two repo secrets:
+  - `CLOUDFLARE_API_TOKEN`: create one in Cloudflare → My Profile → API Tokens, with the **Cloudflare Pages: Edit** permission.
+  - `CLOUDFLARE_ACCOUNT_ID`.
+- *From your machine:* `npx wrangler login`, then `npm run deploy:cloudflare`.
+
+`public/_headers` makes sure the service worker and `index.html` are never served stale.
+
+**GitHub Pages (optional mirror)**: the workflow `.github/workflows/deploy.yml` runs manually from the Actions tab.
+1. Set repo **Settings → Pages → Source: GitHub Actions**.
+2. Run the workflow. The app will be at `https://builtonleverage.github.io/its-cooked/`.
 The workflow sets `BASE_PATH=/its-cooked/` so assets, the manifest and the service worker scope are correct.
 
 **Vercel**: import the repo at vercel.com/new. `vercel.json` already sets the build command and the `dist` output. No env vars needed.
@@ -101,7 +124,7 @@ The app never embeds copyrighted images.
 ## Roadmap (v2)
 
 1. **Sync across devices**: optional sign-in with end-to-end-synced recipes (e.g. CRDT/IndexedDB replication over Supabase or Cloudflare D1). Includes shared family cookbooks.
-2. **Voice control**: "next", "back", "repeat", "start timer" and "how long left?" in Cook Mode via the Web Speech API, with steps read aloud.
+2. **Built-in voice control**: "next", "back", "repeat", "start timer" and "how long left?" in Cook Mode via the Web Speech API, with steps read aloud.
 3. **Scaling servings**: parse quantities (fractions and ranges) and rescale ingredients. Add unit conversion (cups ⇄ grams) and adjust timer hints.
 4. **Shopping list**: add a recipe's ingredients to a merged, aisle-grouped checklist that works offline and can be shared.
 5. **Background push alarms**: Web Push from a tiny serverless function so timers alert even when iOS has suspended the app.

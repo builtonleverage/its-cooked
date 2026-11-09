@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRecipe, useWakeLock } from '../lib/hooks';
-import { navigate } from '../lib/router';
+import { goBack } from '../lib/router';
 import { useTimers } from '../lib/timers';
-import { Icon } from '../components/Icon';
+import { Icon, logoUrl } from '../components/Icon';
 import { CreditedImage } from '../components/Credit';
 import { StartTimerButton, TimerCard } from '../components/TimerViews';
 import { Sheet } from '../components/Sheet';
@@ -72,7 +72,7 @@ export function CookMode({ id }: { id: string }) {
       } else if (['ArrowLeft', 'PageUp', 'Backspace'].includes(e.key)) {
         e.preventDefault();
         go(-1);
-      } else if (e.key === 'Escape') navigate(`/recipe/${id}`, true);
+      } else if (e.key === 'Escape') goBack(`/recipe/${id}`);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -111,7 +111,7 @@ export function CookMode({ id }: { id: string }) {
   return (
     <div className={`cook ${big ? 'bigger' : ''}`} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
       <header className="cook-head">
-        <button className="icon-btn" onClick={() => navigate(`/recipe/${id}`, true)} aria-label={t('exit')}>
+        <button className="icon-btn" onClick={() => goBack(`/recipe/${id}`)} aria-label={t('exit')}>
           <Icon name="close" />
         </button>
         <div className="cook-title">
@@ -136,13 +136,13 @@ export function CookMode({ id }: { id: string }) {
       <section className="cook-body" aria-live="polite">
         {finished ? (
           <div className="cook-done">
-            <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" width={120} height={120} />
+            <img src={logoUrl} alt="" width={120} height={120} />
             <h1>{t('itsCooked')}</h1>
             <p className="lead">{t('enjoy', { title: recipe.title })}</p>
             <button className="btn xl" onClick={() => setStep(0)}>
               <Icon name="restart" /> {t('startOver')}
             </button>
-            <button className="btn primary xl" onClick={() => navigate(`/recipe/${id}`, true)}>
+            <button className="btn primary xl" onClick={() => goBack(`/recipe/${id}`)}>
               {t('done')}
             </button>
           </div>

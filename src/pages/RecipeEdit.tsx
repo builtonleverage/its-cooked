@@ -44,6 +44,7 @@ export function RecipeEdit({ id }: { id?: string }) {
   const [tagText, setTagText] = useState('');
   const [picker, setPicker] = useState<PickerTarget>(null);
   const [error, setError] = useState('');
+  const [stepMsg, setStepMsg] = useState<{ index: number; text: string } | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -239,6 +240,11 @@ export function RecipeEdit({ id }: { id?: string }) {
                 </div>
               )}
 
+              {stepMsg?.index === i && (
+                <p className="small muted" role="status">
+                  {stepMsg.text}
+                </p>
+              )}
               <div className="row wrap">
                 <button className="btn small" onClick={() => setStep(i, { timers: [...s.timers, { id: uid(), label: 'Timer', seconds: 300, checks: [] }] })}>
                   <Icon name="timer" size={18} /> Add timer
@@ -247,7 +253,8 @@ export function RecipeEdit({ id }: { id?: string }) {
                   className="btn small"
                   onClick={() => {
                     const found = detectTimers(s.text);
-                    if (!found.length) return alert('No durations found in this step (e.g. “bake 6–8 min”).');
+                    if (!found.length) return setStepMsg({ index: i, text: 'No durations found in this step. Write them like “bake 6–8 min”.' });
+                    setStepMsg(null);
                     setStep(i, { timers: [...s.timers, ...found.map((f) => ({ ...f, id: uid() }))] });
                   }}
                 >

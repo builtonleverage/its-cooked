@@ -1,9 +1,11 @@
 import type { Recipe, RecipeTranslation } from './types';
 import { contentHash } from './translate';
 
-const base = import.meta.env.BASE_URL;
-const bundled = (file: string, title: string) => ({
-  url: `${base}seed/${file}`,
+import parathaUrl from '../assets/onion-paratha.svg';
+import diagramUrl from '../assets/stuffing-diagram.svg';
+
+const bundled = (url: string, title: string) => ({
+  url,
   sourceUrl: 'https://github.com/builtonleverage/its-cooked',
   title,
   author: "It's Cooked contributors",
@@ -26,7 +28,7 @@ export function seedRecipes(): Recipe[] {
       prepMinutes: 35,
       cookMinutes: 25,
       tags: ['Indian', 'Bread', 'Vegetarian', 'Whole wheat', 'Diabetic-friendly', 'Low-salt option'],
-      image: bundled('onion-paratha.svg', 'Onion tandoori paratha (illustration)'),
+      image: bundled(parathaUrl, 'Onion tandoori paratha (illustration)'),
       ingredients: [
         { id: 'i1', quantity: '2', unit: 'cups', name: 'whole-wheat flour (atta)', note: 'about 250 g, plus extra for dusting' },
         { id: 'i2', quantity: '½', unit: 'tsp', name: 'salt', note: 'use ¼ tsp for low-salt' },
@@ -73,7 +75,7 @@ export function seedRecipes(): Recipe[] {
           id: 's5',
           text: 'Divide the dough into 6 balls. Roll one into a 4-inch disc, put 2 tbsp filling in the centre, gather the edges up and pinch to seal. Flatten, dust with flour and gently roll to 6–7 inches.',
           timers: [],
-          image: bundled('stuffing-diagram.svg', 'How to stuff and seal a paratha (diagram)'),
+          image: bundled(diagramUrl, 'How to stuff and seal a paratha (diagram)'),
         },
         {
           id: 's6',

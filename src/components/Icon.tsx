@@ -50,6 +50,9 @@ export function Icon({ name, size = 22, filled = false, label }: { name: keyof t
   );
 }
 
+import logoUrl from '../assets/logo.svg';
+export { logoUrl };
+
 export function Logo({ size = 32 }: { size?: number }) {
-  return <img src={`${import.meta.env.BASE_URL}favicon.svg`} width={size} height={size} alt="" className="logo" />;
+  return <img src={logoUrl} width={size} height={size} alt="" className="logo" />;
 }

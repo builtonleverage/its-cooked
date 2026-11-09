@@ -15,15 +15,12 @@ export function NarrateSheet({ recipe, fromStep, onClose }: { recipe: Recipe; fr
   const prompt = edited ?? generated;
   const [status, setStatus] = useState('');
 
-  const launch = (appId: string) => {
-    const app = AI_APPS.find((a) => a.id === appId)!;
-    const { url, prefilled } = appUrl(app, prompt);
-    // Start the copy and open the app in the same tap — iOS only allows window.open during a user gesture.
-    const copying = copyText(prompt);
-    const w = window.open(url, '_blank');
-    if (w) w.opener = null;
-    else window.location.href = url; // pop-up blocked: open in this tab (the app state is all saved)
-    void copying.then((ok) =>
+  const links = useMemo(() => AI_APPS.map((app) => ({ app, ...appUrl(app, prompt) })), [prompt]);
+
+  // A real link (not window.open) so it works in installed apps, embedded pages and pop-up blockers.
+  // The copy starts in the same tap, before the browser leaves for the AI app.
+  const onLaunch = (app: (typeof AI_APPS)[number], prefilled: boolean) => {
+    void copyText(prompt).then((ok) =>
       setStatus(
         `${ok ? (hi() ? 'प्रॉम्प्ट कॉपी हो गया।' : 'Prompt copied.') : hi() ? 'कॉपी नहीं हो सका — नीचे से कॉपी करें।' : "Couldn't copy — copy it from the box below."} ${
           prefilled ? (hi() ? `${app.name} में प्रॉम्प्ट पहले से भरा है — बस भेजें।` : `It's pre-filled in ${app.name} — just send it.`) : hi() ? `${app.name} में पेस्ट करें।` : `Paste it into ${app.name}.`
@@ -71,15 +68,15 @@ export function NarrateSheet({ recipe, fromStep, onClose }: { recipe: Recipe; fr
       </div>
 
       <div className="ai-grid">
-        {AI_APPS.map((a) => (
-          <button key={a.id} className="btn ai-btn" onClick={() => launch(a.id)}>
-            <span className={`ai-dot ${a.id}`} aria-hidden>
-              {a.name[0]}
+        {links.map(({ app, url, prefilled }) => (
+          <a key={app.id} className="btn ai-btn" href={url} target="_blank" rel="noopener noreferrer" onClick={() => onLaunch(app, prefilled)}>
+            <span className={`ai-dot ${app.id}`} aria-hidden>
+              {app.name[0]}
             </span>
-            {a.name}
-          </button>
+            {app.name}
+          </a>
         ))}
-        {'share' in navigator && (
+        {!__ARTIFACT__ && 'share' in navigator && (
           <button
             className="btn ai-btn"
             onClick={async () => {

@@ -11,7 +11,8 @@
     "test": "vitest run",
     "typecheck": "tsc -b",
     "icons": "node scripts/gen-icons.mjs",
-    "deploy:cloudflare": "npm run build && npx wrangler@4 pages deploy dist --project-name its-cooked --branch main --commit-dirty=true"
+    "deploy:cloudflare": "npm run build && npx wrangler@4 pages deploy dist --project-name its-cooked --branch main --commit-dirty=true",
+    "build:artifact": "vite build --mode artifact && node scripts/make-artifact.mjs"
   },
   "dependencies": {
     "idb": "^8.0.4",
@@ -31,6 +32,7 @@
     "typescript": "^5.9.3",
     "vite": "^8.3.6",
     "vite-plugin-pwa": "^2.0.0",
+    "vite-plugin-singlefile": "^2.3.4",
     "vitest": "^5.1.0",
     "workbox-window": "^7.4.1"
   }

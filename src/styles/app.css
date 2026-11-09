@@ -1449,3 +1449,8 @@ textarea.input {
   line-height: 1.45;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
+.btn.armed {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: var(--on-accent);
+}
