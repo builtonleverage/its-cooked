@@ -6,14 +6,19 @@ import { Icon } from '../components/Icon';
 import { CreditedImage, CreditLine } from '../components/Credit';
 import { StartTimerButton } from '../components/TimerViews';
 import type { ImageCredit, Recipe } from '../lib/types';
+import { useT, useLang } from '../lib/i18n';
+import { localize } from '../lib/translate';
+import { LangToggle, TranslateBanner } from '../components/Lang';
+import { NarrateSheet } from '../components/NarrateSheet';
 
 export function BackBar({ title, to = '/', right }: { title?: string; to?: string; right?: React.ReactNode }) {
+  const t = useT();
   return (
     <div className="backbar">
       <button
         className="icon-btn"
         onClick={() => (history.length > 1 ? history.back() : navigate(to))}
-        aria-label="Back"
+        aria-label={t('back')}
       >
         <Icon name="back" />
       </button>
@@ -27,6 +32,7 @@ export function OfflineButton({ recipe }: { recipe: Recipe }) {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
   const online = useOnline();
+  const t = useT();
   if (recipe.offlineAt)
     return (
       <button
@@ -36,7 +42,7 @@ export function OfflineButton({ recipe }: { recipe: Recipe }) {
         }}
         aria-label="Saved for offline. Tap to remove offline copy"
       >
-        <Icon name="check" /> Saved offline
+        <Icon name="check" /> {t('savedOffline')}
       </button>
     );
   return (
@@ -52,7 +58,7 @@ export function OfflineButton({ recipe }: { recipe: Recipe }) {
           if (r.failed) setMsg(`${r.failed} image${r.failed > 1 ? 's' : ''} couldn't be saved${online ? '' : ' (offline)'} — text is saved.`);
         }}
       >
-        <Icon name="download" /> {busy ? 'Saving…' : 'Download for offline'}
+        <Icon name="download" /> {busy ? t('saving') : t('downloadOffline')}
       </button>
       {msg && <p className="small muted">{msg}</p>}
     </>
@@ -60,11 +66,15 @@ export function OfflineButton({ recipe }: { recipe: Recipe }) {
 }
 
 export function RecipeView({ id }: { id: string }) {
-  const recipe = useRecipe(id);
+  const raw = useRecipe(id);
+  const lang = useLang();
+  const t = useT();
   const [checked, setChecked] = useState<Set<string>>(new Set());
+  const [narrate, setNarrate] = useState(false);
+  const recipe = raw ? localize(raw, lang) : raw;
 
   if (recipe === undefined) return <div className="page" />;
-  if (recipe === null)
+  if (recipe === null || !raw)
     return (
       <div className="page">
         <BackBar />
@@ -85,15 +95,16 @@ export function RecipeView({ id }: { id: string }) {
       <BackBar
         right={
           <>
+            <LangToggle />
             <button
               className="icon-btn"
               aria-pressed={!!recipe.favourite}
               aria-label={recipe.favourite ? 'Remove from favourites' : 'Add to favourites'}
-              onClick={() => saveRecipe({ ...recipe, favourite: !recipe.favourite })}
+              onClick={() => saveRecipe({ ...raw, favourite: !raw.favourite })}
             >
               <Icon name="heart" filled={recipe.favourite} />
             </button>
-            <a className="icon-btn" href={`#/edit/${recipe.id}`} aria-label="Edit recipe">
+            <a className="icon-btn" href={`#/edit/${recipe.id}`} aria-label={t('edit')}>
               <Icon name="edit" />
             </a>
           </>
@@ -102,26 +113,27 @@ export function RecipeView({ id }: { id: string }) {
       {recipe.image && <CreditedImage credit={recipe.image} recipeId={recipe.id} className="hero" alt={recipe.title} />}
       <h1 className="recipe-title">{recipe.title}</h1>
       {recipe.summary && <p className="lead">{recipe.summary}</p>}
+      <TranslateBanner recipe={raw} />
       <div className="stats">
         <div>
           <strong>{recipe.servings}</strong>
-          <span>servings</span>
+          <span>{t('servings')}</span>
         </div>
         {recipe.prepMinutes ? (
           <div>
             <strong>{recipe.prepMinutes}m</strong>
-            <span>prep</span>
+            <span>{t('prep')}</span>
           </div>
         ) : null}
         {recipe.cookMinutes ? (
           <div>
             <strong>{recipe.cookMinutes}m</strong>
-            <span>cook</span>
+            <span>{t('cook')}</span>
           </div>
         ) : null}
         <div>
           <strong>{recipe.steps.length}</strong>
-          <span>steps</span>
+          <span>{t('steps')}</span>
         </div>
       </div>
       {recipe.tags.length > 0 && (
@@ -136,13 +148,16 @@ export function RecipeView({ id }: { id: string }) {
 
       <div className="action-row">
         <a className="btn primary xl" href={`#/cook/${recipe.id}`}>
-          <Icon name="play" /> Start Cook Mode
+          <Icon name="play" /> {t('startCook')}
         </a>
-        <OfflineButton recipe={recipe} />
+        <button className="btn ai" onClick={() => setNarrate(true)}>
+          <Icon name="mic" /> {t('narrate')}
+        </button>
+        <OfflineButton recipe={raw} />
       </div>
 
       <section>
-        <h2>Ingredients</h2>
+        <h2>{t('ingredients')}</h2>
         <ul className="ingredients">
           {recipe.ingredients.map((i) => (
             <li key={i.id}>
@@ -162,7 +177,7 @@ export function RecipeView({ id }: { id: string }) {
       </section>
 
       <section>
-        <h2>Method</h2>
+        <h2>{t('method')}</h2>
         <ol className="steps">
           {recipe.steps.map((s, idx) => (
             <li key={s.id}>
@@ -183,7 +198,7 @@ export function RecipeView({ id }: { id: string }) {
 
       {recipe.notes && (
         <section>
-          <h2>Notes</h2>
+          <h2>{t('notes')}</h2>
           <div className="notes">
             {recipe.notes.split(/\n{2,}/).map((p, i) => (
               <p key={i}>{p}</p>
@@ -194,7 +209,7 @@ export function RecipeView({ id }: { id: string }) {
 
       {credits.length > 0 && (
         <section className="credits">
-          <h2>Image credits</h2>
+          <h2>{t('imageCredits')}</h2>
           <ul>
             {credits.map((c, i) => (
               <li key={i} className="small">
@@ -214,8 +229,9 @@ export function RecipeView({ id }: { id: string }) {
           }
         }}
       >
-        <Icon name="trash" /> Delete recipe
+        <Icon name="trash" /> {t('deleteRecipe')}
       </button>
+      {narrate && <NarrateSheet recipe={raw} onClose={() => setNarrate(false)} />}
     </div>
   );
 }

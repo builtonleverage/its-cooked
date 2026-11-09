@@ -2,10 +2,12 @@ import { timerActions, useTimers } from '../lib/timers';
 import { navigate } from '../lib/router';
 import { Icon } from './Icon';
 import { useEffect } from 'react';
+import { useT } from '../lib/i18n';
 
 /** Full-width banners for a finished timer (until stopped) and check-in alerts. */
 export function AlertLayer() {
   const { timers, ringing, lastCheck } = useTimers();
+  const tr = useT();
   const ring = timers.filter((t) => ringing.includes(t.id));
 
   useEffect(() => {
@@ -21,14 +23,14 @@ export function AlertLayer() {
         <div key={t.id} className="alert done">
           <Icon name="bell" size={28} />
           <div className="alert-text">
-            <strong>{t.label} is done</strong>
+            <strong>{tr('isDone', { label: t.label })}</strong>
             {t.recipeTitle && <span className="small">{t.recipeTitle}</span>}
           </div>
           <button className="btn light" onClick={() => timerActions.add(t.id, 60)}>
-            +1 min
+            {tr('plus1')}
           </button>
           <button className="btn dark" onClick={() => timerActions.dismiss(t.id)} autoFocus>
-            Stop
+            {tr('stop')}
           </button>
         </div>
       ))}
@@ -36,7 +38,7 @@ export function AlertLayer() {
         <div className="alert check">
           <Icon name="timer" size={26} />
           <div className="alert-text">
-            <strong>Check now</strong>
+            <strong>{tr('checkNow')}</strong>
             <span className="small">{lastCheck.label}</span>
           </div>
           <button
@@ -46,10 +48,10 @@ export function AlertLayer() {
               navigate('/timers');
             }}
           >
-            Timers
+            {tr('timers')}
           </button>
           <button className="btn dark" onClick={() => timerActions.dismissCheck()}>
-            OK
+            {tr('ok')}
           </button>
         </div>
       )}

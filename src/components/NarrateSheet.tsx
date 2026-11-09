@@ -1,0 +1,122 @@
+import { useMemo, useState } from 'react';
+import type { Recipe } from '../lib/types';
+import { AI_APPS, appUrl, buildPrompt, copyText, type NarrationLang, type NarrationMode } from '../lib/narration';
+import { getLang } from '../lib/i18n';
+import { Sheet } from './Sheet';
+import { Icon } from './Icon';
+
+const hi = () => getLang() === 'hi';
+
+export function NarrateSheet({ recipe, fromStep, onClose }: { recipe: Recipe; fromStep?: number; onClose: () => void }) {
+  const [lang, setLang] = useState<NarrationLang>(getLang() === 'hi' ? 'hi' : 'en');
+  const [mode, setMode] = useState<NarrationMode>('walkthrough');
+  const generated = useMemo(() => buildPrompt(recipe, { lang, mode, fromStep }), [recipe, lang, mode, fromStep]);
+  const [edited, setEdited] = useState<string | null>(null);
+  const prompt = edited ?? generated;
+  const [status, setStatus] = useState('');
+
+  const launch = (appId: string) => {
+    const app = AI_APPS.find((a) => a.id === appId)!;
+    const { url, prefilled } = appUrl(app, prompt);
+    // Start the copy and open the app in the same tap — iOS only allows window.open during a user gesture.
+    const copying = copyText(prompt);
+    const w = window.open(url, '_blank');
+    if (w) w.opener = null;
+    else window.location.href = url; // pop-up blocked: open in this tab (the app state is all saved)
+    void copying.then((ok) =>
+      setStatus(
+        `${ok ? (hi() ? 'प्रॉम्प्ट कॉपी हो गया।' : 'Prompt copied.') : hi() ? 'कॉपी नहीं हो सका — नीचे से कॉपी करें।' : "Couldn't copy — copy it from the box below."} ${
+          prefilled ? (hi() ? `${app.name} में प्रॉम्प्ट पहले से भरा है — बस भेजें।` : `It's pre-filled in ${app.name} — just send it.`) : hi() ? `${app.name} में पेस्ट करें।` : `Paste it into ${app.name}.`
+        } ${hi() ? app.voiceTipHi : app.voiceTip}`,
+      ),
+    );
+  };
+
+  return (
+    <Sheet title={hi() ? 'AI आवाज़ गाइड' : 'AI voice guide'} onClose={onClose} tall>
+      <p className="muted small">
+        {hi()
+          ? 'अपनी पसंद का AI ऐप चुनें। हम इस रेसिपी के लिए एक तैयार प्रॉम्प्ट कॉपी करके ऐप खोल देंगे — फिर वॉइस मोड चालू करें और AI आपको बोलकर कदम-दर-कदम बताएगा।'
+          : 'Pick your favourite AI app. We copy a ready-made prompt for this recipe and open the app — then switch on its voice mode and it will talk you through the cook, step by step.'}
+      </p>
+
+      <h3 className="label">{hi() ? 'भाषा' : 'Narration language'}</h3>
+      <div className="segmented" role="radiogroup">
+        {(
+          [
+            ['en', 'English'],
+            ['hi', 'हिंदी'],
+            ['hinglish', 'Hinglish'],
+          ] as const
+        ).map(([v, label]) => (
+          <button key={v} role="radio" aria-checked={lang === v} className={lang === v ? 'on' : ''} onClick={() => (setLang(v), setEdited(null))}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      <h3 className="label">{hi() ? 'तरीका' : 'Style'}</h3>
+      <div className="segmented" role="radiogroup">
+        {(
+          [
+            ['walkthrough', hi() ? 'कदम-दर-कदम' : 'Step by step'],
+            ['readall', hi() ? 'पूरी पढ़ें' : 'Read it all'],
+            ['coach', hi() ? 'टिप्स व कोच' : 'Tips & coach'],
+          ] as const
+        ).map(([v, label]) => (
+          <button key={v} role="radio" aria-checked={mode === v} className={mode === v ? 'on' : ''} onClick={() => (setMode(v), setEdited(null))}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      <div className="ai-grid">
+        {AI_APPS.map((a) => (
+          <button key={a.id} className="btn ai-btn" onClick={() => launch(a.id)}>
+            <span className={`ai-dot ${a.id}`} aria-hidden>
+              {a.name[0]}
+            </span>
+            {a.name}
+          </button>
+        ))}
+        {'share' in navigator && (
+          <button
+            className="btn ai-btn"
+            onClick={async () => {
+              void copyText(prompt);
+              try {
+                await navigator.share({ title: recipe.title, text: prompt });
+              } catch {
+                /* cancelled */
+              }
+            }}
+          >
+            <Icon name="share" /> {hi() ? 'अन्य ऐप' : 'Other app'}
+          </button>
+        )}
+      </div>
+
+      {status && (
+        <p className="notice ok-notice" role="status">
+          <Icon name="check" /> {status}
+        </p>
+      )}
+
+      <div className="row between">
+        <h3 className="label">{hi() ? 'प्रॉम्प्ट (बदल सकते हैं)' : 'Prompt (you can edit it)'}</h3>
+        <button
+          className="btn small"
+          onClick={async () => setStatus((await copyText(prompt)) ? (hi() ? 'प्रॉम्प्ट कॉपी हो गया।' : 'Prompt copied.') : hi() ? 'कॉपी नहीं हो सका।' : "Couldn't copy.")}
+        >
+          {hi() ? 'कॉपी करें' : 'Copy'}
+        </button>
+      </div>
+      <textarea className="input prompt-box" rows={10} value={prompt} onChange={(e) => setEdited(e.target.value)} aria-label="Prompt" />
+      <p className="small muted">
+        {hi()
+          ? 'आपकी रेसिपी सिर्फ़ तभी उस AI ऐप में जाती है जब आप उसे भेजते हैं। उस ऐप की अपनी प्राइवेसी शर्तें लागू होती हैं।'
+          : 'Your recipe only goes to the AI app when you send it there; that app’s own privacy terms apply.'}
+      </p>
+    </Sheet>
+  );
+}

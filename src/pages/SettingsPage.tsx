@@ -4,12 +4,14 @@ import { exportAll, importAll } from '../lib/db';
 import { ensureSeed } from '../lib/bootstrap';
 import { notificationsSupported, notify, playChime, requestNotificationPermission, vibrate } from '../lib/alerts';
 import { Icon, Logo } from '../components/Icon';
+import { setLang, useLang } from '../lib/i18n';
 
 const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 const isStandalone = matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone === true;
 
 export function SettingsPage() {
   const [theme, setTheme] = useTheme();
+  const lang = useLang();
   const [perm, setPerm] = useState(notificationsSupported() ? Notification.permission : 'unsupported');
   const [msg, setMsg] = useState('');
   const file = useRef<HTMLInputElement>(null);
@@ -31,6 +33,26 @@ export function SettingsPage() {
           </div>
         </section>
       )}
+
+      <section>
+        <h2>Language · भाषा</h2>
+        <div className="segmented" role="radiogroup" aria-label="Language">
+          {(
+            [
+              ['en', 'English'],
+              ['hi', 'हिंदी'],
+            ] as const
+          ).map(([v, label]) => (
+            <button key={v} role="radio" aria-checked={lang === v} className={lang === v ? 'on' : ''} onClick={() => setLang(v)}>
+              {label}
+            </button>
+          ))}
+        </div>
+        <p className="small muted">
+          Switches the app and your recipes. Recipes without a Hindi version can be translated with one tap (on-device in supported browsers, otherwise via
+          the free MyMemory service); the translation is saved for offline use.
+        </p>
+      </section>
 
       <section>
         <h2>Appearance</h2>

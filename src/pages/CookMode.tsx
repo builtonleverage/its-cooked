@@ -7,12 +7,22 @@ import { CreditedImage } from '../components/Credit';
 import { StartTimerButton, TimerCard } from '../components/TimerViews';
 import { Sheet } from '../components/Sheet';
 import { haptic } from '../lib/util';
+import { fmtDur, useLang, useT } from '../lib/i18n';
+import { localize } from '../lib/translate';
+import { LangToggle, TranslateBanner } from '../components/Lang';
+import { NarrateSheet } from '../components/NarrateSheet';
+import { speak, speechSupported, stopSpeaking, useSpeaking } from '../lib/speech';
 
 const posKey = (id: string) => `its-cooked:cook:${id}`;
 
 export function CookMode({ id }: { id: string }) {
-  const recipe = useRecipe(id);
+  const raw = useRecipe(id);
+  const lang = useLang();
+  const t = useT();
+  const recipe = raw ? localize(raw, lang) : raw;
   const { timers } = useTimers();
+  const [narrate, setNarrate] = useState(false);
+  const [speaking, setSpeaking] = useSpeaking();
   const [step, setStep] = useState(() => {
     try {
       return Number(sessionStorage.getItem(posKey(id))) || 0;
@@ -37,6 +47,12 @@ export function CookMode({ id }: { id: string }) {
     [total],
   );
 
+  // Stop reading when the step or language changes.
+  useEffect(() => {
+    stopSpeaking();
+    setSpeaking(false);
+  }, [step, lang, setSpeaking]);
+
   useEffect(() => {
     try {
       sessionStorage.setItem(posKey(id), String(step));
@@ -48,7 +64,8 @@ export function CookMode({ id }: { id: string }) {
   // Keyboard / Bluetooth page-turner / foot-pedal friendly.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement) return;
+      const el = e.target as HTMLElement;
+      if (el.closest?.('input, textarea, select, button, a, dialog') || document.querySelector('dialog[open]')) return;
       if (['ArrowRight', 'PageDown', ' ', 'Enter'].includes(e.key)) {
         e.preventDefault();
         go(1);
@@ -72,7 +89,21 @@ export function CookMode({ id }: { id: string }) {
     if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) go(dx < 0 ? 1 : -1);
   };
 
-  if (!recipe) return <div className="cook" />;
+  if (!recipe || !raw) return <div className="cook" />;
+
+  const readStep = () => {
+    if (speaking) {
+      stopSpeaking();
+      setSpeaking(false);
+      return;
+    }
+    const st = recipe.steps[step];
+    if (!st) return;
+    const timerText = st.timers.map((x) => `${x.label}, ${fmtDur(x.seconds, lang)}.`).join(' ');
+    const prefix = t('stepOf', { n: step + 1, total });
+    setSpeaking(true);
+    speak(`${prefix}. ${st.text} ${timerText}`, lang, () => setSpeaking(false));
+  };
   const s = recipe.steps[step];
   const stepTimers = timers.filter((t) => t.recipeId === recipe.id && t.stepIndex === step);
   const otherTimers = timers.filter((t) => !(t.recipeId === recipe.id && t.stepIndex === step) && t.status !== 'done');
@@ -80,20 +111,21 @@ export function CookMode({ id }: { id: string }) {
   return (
     <div className={`cook ${big ? 'bigger' : ''}`} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
       <header className="cook-head">
-        <button className="icon-btn" onClick={() => navigate(`/recipe/${id}`, true)} aria-label="Exit Cook Mode">
+        <button className="icon-btn" onClick={() => navigate(`/recipe/${id}`, true)} aria-label={t('exit')}>
           <Icon name="close" />
         </button>
         <div className="cook-title">
           <span className="ellipsis">{recipe.title}</span>
           <span className="small muted">
-            {finished ? 'Finished' : `Step ${step + 1} of ${total}`}
-            {wake === 'on' ? ' · screen stays on' : wake === 'unsupported' ? '' : ''}
+            {finished ? t('finished') : t('stepOf', { n: step + 1, total })}
+            {wake === 'on' ? (lang === 'hi' ? ' · स्क्रीन चालू रहेगी' : ' · screen stays on') : ''}
           </span>
         </div>
+        <LangToggle />
         <button className="icon-btn" onClick={() => setBig((b) => !b)} aria-pressed={big} aria-label="Larger text">
           <span className="aa">Aa</span>
         </button>
-        <button className="icon-btn" onClick={() => setShowIng(true)} aria-label="Show ingredients">
+        <button className="icon-btn" onClick={() => setShowIng(true)} aria-label={t('ingredientsShow')}>
           <Icon name="list" />
         </button>
       </header>
@@ -105,18 +137,29 @@ export function CookMode({ id }: { id: string }) {
         {finished ? (
           <div className="cook-done">
             <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" width={120} height={120} />
-            <h1>It's cooked!</h1>
-            <p className="lead">Enjoy your {recipe.title}.</p>
+            <h1>{t('itsCooked')}</h1>
+            <p className="lead">{t('enjoy', { title: recipe.title })}</p>
             <button className="btn xl" onClick={() => setStep(0)}>
-              <Icon name="restart" /> Start over
+              <Icon name="restart" /> {t('startOver')}
             </button>
             <button className="btn primary xl" onClick={() => navigate(`/recipe/${id}`, true)}>
-              Done
+              {t('done')}
             </button>
           </div>
         ) : (
           <>
+            <TranslateBanner recipe={raw} compact />
             <p className="cook-text">{s.text}</p>
+            <div className="cook-tools">
+              {speechSupported() && (
+                <button className={`btn small ${speaking ? 'primary' : ''}`} onClick={readStep} aria-pressed={speaking}>
+                  <Icon name="speaker" size={18} /> {speaking ? t('stopReading') : t('readAloud')}
+                </button>
+              )}
+              <button className="btn small ai" onClick={() => setNarrate(true)}>
+                <Icon name="mic" size={18} /> {t('narrate')}
+              </button>
+            </div>
             {s.image && <CreditedImage credit={s.image} recipeId={recipe.id} className="cook-img" />}
             {s.timers.length > 0 && (
               <div className="cook-timers">
@@ -132,7 +175,7 @@ export function CookMode({ id }: { id: string }) {
         )}
         {otherTimers.length > 0 && (
           <div className="cook-other">
-            <h2 className="small muted">Other running timers</h2>
+            <h2 className="small muted">{t('otherTimers')}</h2>
             {otherTimers.map((t) => (
               <TimerCard key={t.id} t={t} />
             ))}
@@ -142,17 +185,17 @@ export function CookMode({ id }: { id: string }) {
 
       {!finished && (
         <footer className="cook-nav">
-          <button className="btn xl" onClick={() => go(-1)} disabled={step === 0} aria-label="Previous step">
+          <button className="btn xl" onClick={() => go(-1)} disabled={step === 0} aria-label={t('back')}>
             <Icon name="back" size={28} />
           </button>
-          <button className="btn primary xl grow" onClick={() => go(1)} aria-label={step === total - 1 ? 'Finish' : 'Next step'}>
-            {step === total - 1 ? 'Finish' : 'Next'} <Icon name="next" size={28} />
+          <button className="btn primary xl grow" onClick={() => go(1)}>
+            {step === total - 1 ? t('finish') : t('next')} <Icon name="next" size={28} />
           </button>
         </footer>
       )}
 
       {showIng && (
-        <Sheet title="Ingredients" onClose={() => setShowIng(false)}>
+        <Sheet title={t('ingredients')} onClose={() => setShowIng(false)}>
           <ul className="ingredients big">
             {recipe.ingredients.map((i) => (
               <li key={i.id}>
@@ -166,6 +209,7 @@ export function CookMode({ id }: { id: string }) {
           </ul>
         </Sheet>
       )}
+      {narrate && <NarrateSheet recipe={raw} fromStep={finished ? 0 : step} onClose={() => setNarrate(false)} />}
     </div>
   );
 }

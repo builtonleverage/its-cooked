@@ -14,18 +14,20 @@ import { TimersPage } from './pages/TimersPage';
 import { SavedPage } from './pages/SavedPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { useRegisterSW } from 'virtual:pwa-register/react';
+import { useT, type StrKey } from './lib/i18n';
 
-const tabs = [
-  { path: '/', label: 'Recipes', icon: 'book' },
-  { path: '/timers', label: 'Timers', icon: 'timer' },
-  { path: '/saved', label: 'Offline', icon: 'download' },
-  { path: '/settings', label: 'Settings', icon: 'settings' },
+const tabs: { path: string; label: StrKey; icon: string }[] = [
+  { path: '/', label: 'recipes', icon: 'book' },
+  { path: '/timers', label: 'timers', icon: 'timer' },
+  { path: '/saved', label: 'offline', icon: 'download' },
+  { path: '/settings', label: 'settings', icon: 'settings' },
 ];
 
 export function App() {
   const route = useRoute();
   const online = useOnline();
   const cook = match(route, '/cook/:id');
+  const t = useT();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -51,7 +53,7 @@ export function App() {
       </a>
       {!online && (
         <div className="offline-bar" role="status">
-          <Icon name="wifiOff" size={16} /> Offline — your recipes and timers still work
+          <Icon name="wifiOff" size={16} /> {t('offlineBar')}
         </div>
       )}
       <main id="main" key={route.split('?')[0]}>
@@ -60,10 +62,10 @@ export function App() {
       {!cook && <TimerDock />}
       {!cook && (
         <nav className="tabbar" aria-label="Main">
-          {tabs.map((t) => (
-            <a key={t.path} href={`#${t.path}`} className={activeTab === t ? 'on' : ''} aria-current={activeTab === t ? 'page' : undefined}>
-              <Icon name={t.icon} size={24} />
-              <span>{t.label}</span>
+          {tabs.map((tab) => (
+            <a key={tab.path} href={`#${tab.path}`} className={activeTab === tab ? 'on' : ''} aria-current={activeTab === tab ? 'page' : undefined}>
+              <Icon name={tab.icon} size={24} />
+              <span>{t(tab.label)}</span>
             </a>
           ))}
         </nav>
@@ -92,6 +94,7 @@ function TimerDock() {
 }
 
 function UpdatePrompt() {
+  const t = useT();
   const [dismissed, setDismissed] = useState(false);
   const {
     needRefresh: [needRefresh],
@@ -106,15 +109,15 @@ function UpdatePrompt() {
   if (offlineReady)
     return (
       <div className="toast" role="status">
-        <Icon name="check" size={18} /> Ready to work offline
+        <Icon name="check" size={18} /> {t('readyOffline')}
       </div>
     );
   if (needRefresh && !dismissed)
     return (
       <div className="toast" role="status">
-        New version available
+        {t('newVersion')}
         <button className="btn small primary" onClick={() => updateServiceWorker(true)}>
-          Update
+          {t('update')}
         </button>
         <button className="icon-btn sm" onClick={() => setDismissed(true)} aria-label="Later">
           <Icon name="close" size={16} />

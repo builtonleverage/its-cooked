@@ -1325,3 +1325,127 @@ textarea.input {
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* ---------- language, translation & AI voice guide ---------- */
+:lang(hi) body,
+:root:lang(hi) {
+  --font: ui-rounded, 'Kohinoor Devanagari', 'Noto Sans Devanagari', 'Mukta', system-ui, -apple-system, sans-serif;
+}
+:root:lang(hi) .cook-text {
+  line-height: 1.55;
+}
+.lang-toggle {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  min-width: 44px;
+  height: 40px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 800;
+  font-size: 0.95rem;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.lang-toggle:active {
+  transform: scale(0.95);
+}
+.translate-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 8px 0 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: var(--accent-soft);
+  font-weight: 600;
+}
+.translate-banner > span:first-child {
+  flex: 1 1 200px;
+}
+.translate-banner.compact {
+  font-size: 0.9rem;
+  padding: 10px 12px;
+}
+.translate-banner .err {
+  color: var(--danger);
+  flex-basis: 100%;
+}
+.tr-note {
+  margin: 0 0 8px;
+}
+.btn.ai {
+  background: linear-gradient(135deg, color-mix(in srgb, #7c5cff 18%, var(--surface)), color-mix(in srgb, #ff7a59 18%, var(--surface)));
+  border-color: transparent;
+}
+.cook-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: -6px 0 18px;
+}
+.label {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin: 16px 0 4px;
+}
+.row.between {
+  justify-content: space-between;
+}
+.ai-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 16px 0 8px;
+}
+.ai-btn {
+  justify-content: flex-start;
+  min-height: 56px;
+  border-radius: 16px;
+}
+.ai-dot {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.9rem;
+  background: #555;
+}
+.ai-dot.chatgpt {
+  background: #10a37f;
+}
+.ai-dot.claude {
+  background: #d97757;
+}
+.ai-dot.gemini {
+  background: linear-gradient(135deg, #4285f4, #9b72cb);
+}
+.ai-dot.copilot {
+  background: linear-gradient(135deg, #0078d4, #2bb673);
+}
+.ai-dot.perplexity {
+  background: #1f6f78;
+}
+.ok-notice {
+  background: var(--ok-soft);
+  color: var(--ok);
+  align-items: flex-start;
+}
+.ok-notice svg {
+  flex: none;
+  margin-top: 2px;
+}
+.prompt-box {
+  font-size: 0.85rem;
+  line-height: 1.45;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}

@@ -1,18 +1,25 @@
-import { useDeferredValue, useMemo, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { useRecipes } from '../lib/hooks';
 import type { Recipe } from '../lib/types';
 import { Icon, Logo } from '../components/Icon';
 import { CreditedImage } from '../components/Credit';
+import { LangToggle } from '../components/Lang';
+import { useLang, useT } from '../lib/i18n';
+import { localize } from '../lib/translate';
 
 function searchText(r: Recipe) {
   return [r.title, r.summary, r.notes, ...r.tags, ...r.ingredients.map((i) => i.name)].join(' ').toLowerCase();
 }
 
 export function Library() {
-  const recipes = useRecipes();
+  const raw = useRecipes();
+  const lang = useLang();
+  const t = useT();
+  const recipes = useMemo(() => raw?.map((r) => localize(r, lang)) ?? null, [raw, lang]);
   const [q, setQ] = useState('');
   const [tag, setTag] = useState<string | null>(null);
   const dq = useDeferredValue(q.trim().toLowerCase());
+  useEffect(() => setTag(null), [lang]);
 
   const tags = useMemo(() => {
     const count = new Map<string, number>();
@@ -21,15 +28,16 @@ export function Library() {
   }, [recipes]);
 
   const filtered = useMemo(() => {
-    if (!recipes) return [];
+    if (!recipes || !raw) return [];
     const words = dq.split(/\s+/).filter(Boolean);
-    return recipes.filter((r) => {
+    return recipes.filter((r, idx) => {
       if (tag && !r.tags.includes(tag)) return false;
       if (!words.length) return true;
-      const text = searchText(r);
+      // Search both the shown language and the original, so English words work in Hindi mode too.
+      const text = searchText(r) + (r === raw[idx] ? '' : ' ' + searchText(raw[idx]));
       return words.every((w) => text.includes(w));
     });
-  }, [recipes, dq, tag]);
+  }, [recipes, raw, dq, tag]);
 
   return (
     <div className="page">
@@ -37,9 +45,10 @@ export function Library() {
         <Logo size={40} />
         <div>
           <h1>It's Cooked</h1>
-          <p className="muted small">{recipes ? `${recipes.length} recipe${recipes.length === 1 ? '' : 's'}` : ' '}</p>
+          <p className="muted small">{recipes ? (recipes.length === 1 ? t('recipeCount1') : t('recipeCount', { n: recipes.length })) : ' '}</p>
         </div>
-        <a className="btn primary round" href="#/new" aria-label="New recipe">
+        <LangToggle />
+        <a className="btn primary round" href="#/new" aria-label={t('newRecipe')}>
           <Icon name="plus" />
         </a>
       </header>
@@ -50,8 +59,8 @@ export function Library() {
           type="search"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search recipes, ingredients, tags…"
-          aria-label="Search recipes"
+          placeholder={t('search')}
+          aria-label={t('search')}
           enterKeyHint="search"
         />
       </div>
@@ -59,7 +68,7 @@ export function Library() {
       {tags.length > 0 && (
         <div className="chips scroll-x" role="group" aria-label="Filter by tag">
           <button className={`chip ${!tag ? 'on' : ''}`} onClick={() => setTag(null)} aria-pressed={!tag}>
-            All
+            {t('all')}
           </button>
           {tags.map((t) => (
             <button key={t} className={`chip ${tag === t ? 'on' : ''}`} onClick={() => setTag(tag === t ? null : t)} aria-pressed={tag === t}>
@@ -72,10 +81,10 @@ export function Library() {
       {recipes && filtered.length === 0 && (
         <div className="empty">
           <Icon name="pot" size={48} />
-          <p>{recipes.length ? 'No recipes match your search.' : 'No recipes yet — add your first one!'}</p>
+          <p>{recipes.length ? t('noMatch') : t('noRecipes')}</p>
           {!recipes.length && (
             <a className="btn primary" href="#/new">
-              <Icon name="plus" /> New recipe
+              <Icon name="plus" /> {t('newRecipe')}
             </a>
           )}
         </div>
@@ -98,11 +107,11 @@ export function Library() {
                 </h2>
                 <p className="muted small clamp2">{r.summary}</p>
                 <div className="meta-row small">
-                  {(r.prepMinutes || r.cookMinutes) && <span>⏱ {(r.prepMinutes ?? 0) + (r.cookMinutes ?? 0)} min</span>}
+                  {(r.prepMinutes || r.cookMinutes) && <span>⏱ {(r.prepMinutes ?? 0) + (r.cookMinutes ?? 0)} {t('min')}</span>}
                   <span>🍽 {r.servings}</span>
                   {r.offlineAt && (
                     <span className="pill ok">
-                      <Icon name="check" size={12} /> Offline
+                      <Icon name="check" size={12} /> {t('offline')}
                     </span>
                   )}
                 </div>

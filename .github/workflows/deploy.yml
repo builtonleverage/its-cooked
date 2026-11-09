@@ -1,8 +1,7 @@
-name: Deploy to GitHub Pages
+name: Deploy to GitHub Pages (manual)
 
+# Cloudflare Pages is the primary host; run this by hand if you also want a GitHub Pages copy.
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:

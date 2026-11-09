@@ -52,6 +52,21 @@ export interface Recipe {
   updatedAt: number;
   /** Set when the user taps "Download for offline". */
   offlineAt?: number;
+  /** Cached translations of the recipe text, keyed by language. */
+  translations?: { hi?: RecipeTranslation };
+}
+
+export interface RecipeTranslation {
+  title: string;
+  summary: string;
+  notes: string;
+  tags: string[];
+  ingredients: Record<string, { name: string; unit: string; note?: string }>;
+  steps: Record<string, { text: string; timers: Record<string, { label: string; checks: string[] }> }>;
+  /** Hash of the source text this translation was made from (detects outdated translations). */
+  sourceHash: string;
+  source: 'manual' | 'machine';
+  translatedAt: number;
 }
 
 export type TimerStatus = 'running' | 'paused' | 'done';

@@ -4,11 +4,14 @@ import { TimerCard } from '../components/TimerViews';
 import { Icon } from '../components/Icon';
 import { notificationsSupported, requestNotificationPermission } from '../lib/alerts';
 import { haptic } from '../lib/util';
+import { useLang, useT } from '../lib/i18n';
 
 const presets = [1, 3, 5, 10, 15, 20, 30, 45];
 
 export function TimersPage() {
   const { timers } = useTimers();
+  const t = useT();
+  const hi = useLang() === 'hi';
   const [label, setLabel] = useState('');
   const [minutes, setMinutes] = useState('');
   const [perm, setPerm] = useState(notificationsSupported() ? Notification.permission : 'unsupported');
@@ -23,9 +26,9 @@ export function TimersPage() {
     void requestNotificationPermission().then((p) => setPerm(p));
     const secs = Math.round(m * 60);
     timerActions.start({
-      label: name || label.trim() || `${m} min timer`,
+      label: name || label.trim() || `${m} ${t('min')} ${hi ? 'टाइमर' : 'timer'}`,
       seconds: secs,
-      checks: secs >= 240 ? [{ atSeconds: Math.round(secs / 2), label: 'Halfway check' }] : [],
+      checks: secs >= 240 ? [{ atSeconds: Math.round(secs / 2), label: hi ? 'आधे समय पर जाँच' : 'Halfway check' }] : [],
     });
     setLabel('');
     setMinutes('');
@@ -33,10 +36,10 @@ export function TimersPage() {
 
   return (
     <div className="page">
-      <h1>Timers</h1>
+      <h1>{t('timers')}</h1>
       {perm === 'default' && (
         <button className="notice action" onClick={() => requestNotificationPermission().then(setPerm)}>
-          <Icon name="bell" /> Turn on notifications so timers can alert you when the app is in the background.
+          <Icon name="bell" /> {t('enableNotif')}
         </button>
       )}
       {perm === 'unsupported' && (
@@ -45,20 +48,20 @@ export function TimersPage() {
         </p>
       )}
 
-      {sorted.length === 0 && <p className="muted">No timers yet. Start one from a recipe step, or add a quick timer below.</p>}
+      {sorted.length === 0 && <p className="muted">{t('noTimers')}</p>}
       <div className="timer-list">
-        {sorted.map((t) => (
-          <TimerCard key={t.id} t={t} />
+        {sorted.map((x) => (
+          <TimerCard key={x.id} t={x} />
         ))}
       </div>
-      {timers.some((t) => t.status === 'done') && (
+      {timers.some((x) => x.status === 'done') && (
         <button className="btn ghost small" onClick={timerActions.clearDone}>
-          Clear finished
+          {t('clearFinished')}
         </button>
       )}
 
       <section className="quick">
-        <h2>Quick timer</h2>
+        <h2>{t('quickTimer')}</h2>
         <form
           className="quick-form"
           onSubmit={(e) => {
@@ -66,20 +69,20 @@ export function TimersPage() {
             start(parseFloat(minutes));
           }}
         >
-          <input className="input" value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Name (e.g. Tandoor preheat)" aria-label="Timer name" />
-          <input className="input" value={minutes} onChange={(e) => setMinutes(e.target.value)} inputMode="decimal" placeholder="min" aria-label="Minutes" />
+          <input className="input" value={label} onChange={(e) => setLabel(e.target.value)} placeholder={t('timerName')} aria-label={t('timerName')} />
+          <input className="input" value={minutes} onChange={(e) => setMinutes(e.target.value)} inputMode="decimal" placeholder={t('min')} aria-label="Minutes" />
           <button className="btn primary" type="submit" disabled={!(parseFloat(minutes) > 0)}>
-            Start
+            {t('start')}
           </button>
         </form>
         <div className="chips wrap">
           {presets.map((m) => (
             <button key={m} className="chip" onClick={() => start(m)}>
-              {m} min
+              {m} {t('min')}
             </button>
           ))}
         </div>
-        <p className="small muted">Quick timers of 4 min or more include a halfway check alert.</p>
+        <p className="small muted">{t('halfwayNote')}</p>
       </section>
     </div>
   );

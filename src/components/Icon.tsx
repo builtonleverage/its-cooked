@@ -26,6 +26,8 @@ const paths: Record<string, string> = {
   down: 'M12 5v14m0 0 6-6m-6 6-6-6',
   wand: 'M15 4V2M15 10V8M19 6h2M9 6h2M17.8 8.2l1.4 1.4M3 21l12-12M17.8 3.8l1.4-1.4',
   share: 'M12 3v12M8 7l4-4 4 4M5 12v8h14v-8',
+  mic: 'M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3ZM5 11a7 7 0 0 0 14 0M12 18v3',
+  speaker: 'M4 9v6h4l5 4V5L8 9H4Zm12.5-.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12',
 };
 
 export function Icon({ name, size = 22, filled = false, label }: { name: keyof typeof paths | string; size?: number; filled?: boolean; label?: string }) {

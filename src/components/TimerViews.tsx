@@ -1,9 +1,10 @@
 import type { ActiveTimer, TimerSpec } from '../lib/types';
 import { remainingMs } from '../lib/timerLogic';
 import { timerActions, useTimers } from '../lib/timers';
-import { formatClock, formatDuration, haptic } from '../lib/util';
+import { formatClock, haptic } from '../lib/util';
 import { Icon } from './Icon';
 import { requestNotificationPermission } from '../lib/alerts';
+import { fmtDur, useLang, useT } from '../lib/i18n';
 
 export function Ring({ progress, size = 64, stroke = 6, children }: { progress: number; size?: number; stroke?: number; children?: React.ReactNode }) {
   const r = (size - stroke) / 2;
@@ -31,6 +32,8 @@ export function Ring({ progress, size = 64, stroke = 6, children }: { progress: 
 
 export function TimerCard({ t, big = false }: { t: ActiveTimer; big?: boolean }) {
   const { ringing } = useTimers();
+  const t_ = useT();
+  const lang = useLang();
   const left = remainingMs(t, Date.now());
   const progress = 1 - left / (t.totalSeconds * 1000);
   const isRinging = ringing.includes(t.id);
@@ -43,14 +46,12 @@ export function TimerCard({ t, big = false }: { t: ActiveTimer; big?: boolean })
       <div className="timer-main">
         <div className="timer-label">{t.label}</div>
         <div className="timer-clock" role="timer" aria-label={`${t.label}: ${formatClock(left)} left`}>
-          {t.status === 'done' ? 'Done!' : formatClock(left)}
+          {t.status === 'done' ? t_('doneBang') : formatClock(left)}
         </div>
         <div className="timer-sub">
-          {t.status === 'paused' && <span className="pill warn">Paused</span>}
+          {t.status === 'paused' && <span className="pill warn">{t_('paused')}</span>}
           {nextCheck && t.status !== 'done' && (
-            <span className="pill">
-              Check at {formatDuration(nextCheck.atSeconds)}
-            </span>
+            <span className="pill">{t_('checkAt', { t: fmtDur(nextCheck.atSeconds, lang) })}</span>
           )}
           {t.recipeTitle && <span className="muted ellipsis">{t.recipeTitle}{t.stepIndex != null ? ` · step ${t.stepIndex + 1}` : ''}</span>}
         </div>
@@ -58,7 +59,7 @@ export function TimerCard({ t, big = false }: { t: ActiveTimer; big?: boolean })
       <div className="timer-actions">
         {isRinging ? (
           <button className="btn primary" onClick={() => timerActions.dismiss(t.id)}>
-            Stop
+            {t_('stop')}
           </button>
         ) : t.status === 'running' ? (
           <button className="icon-btn lg" onClick={() => timerActions.pause(t.id)} aria-label={`Pause ${t.label}`}>
@@ -98,7 +99,9 @@ export function StartTimerButton({
   recipeTitle: string;
   stepIndex: number;
 }) {
-  const checks = spec.checks.map((c) => formatDuration(c.atSeconds)).join(', ');
+  const t = useT();
+  const lang = useLang();
+  const checks = spec.checks.map((c) => fmtDur(c.atSeconds, lang)).join(', ');
   return (
     <button
       className="timer-start"
@@ -112,11 +115,11 @@ export function StartTimerButton({
       <span>
         <strong>{spec.label}</strong>
         <span className="small">
-          {formatDuration(spec.seconds)}
-          {checks && ` · check at ${checks}`}
+          {fmtDur(spec.seconds, lang)}
+          {checks && ` · ${t('checkAt', { t: checks })}`}
         </span>
       </span>
-      <span className="go">Start</span>
+      <span className="go">{t('start')}</span>
     </button>
   );
 }

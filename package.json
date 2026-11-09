@@ -2,7 +2,7 @@
   "name": "its-cooked",
   "private": true,
   "version": "1.0.0",
-  "description": "It's Cooked — an offline-first recipe & cook-mode PWA",
+  "description": "It's Cooked \u2014 an offline-first recipe & cook-mode PWA",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc -b",
-    "icons": "node scripts/gen-icons.mjs"
+    "icons": "node scripts/gen-icons.mjs",
+    "deploy:cloudflare": "npm run build && npx wrangler@4 pages deploy dist --project-name its-cooked --branch main --commit-dirty=true"
   },
   "dependencies": {
     "idb": "^8.0.4",
