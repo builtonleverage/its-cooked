@@ -1,4 +1,8 @@
-# Cloudflare Pages project config (used by `npm run deploy:cloudflare` and the GitHub Action).
+# Cloudflare Workers static-assets config.
+# Used by Cloudflare's Git integration (deploy command: `npx wrangler deploy`),
+# by `npm run deploy:cloudflare`, and by the GitHub Action.
 name = "its-cooked"
-pages_build_output_dir = "dist"
 compatibility_date = "2026-10-01"
+
+[assets]
+directory = "./dist"

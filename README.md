@@ -78,15 +78,13 @@ To test on a phone on your local network, run `npm run preview -- --host`. Notif
 
 ## Deploy (free)
 
-**Cloudflare Pages (recommended)**. Pick one of these:
-- *No tokens, simplest:*
-  1. In the Cloudflare dashboard go to **Workers & Pages → Create → Pages → Connect to Git** and pick `builtonleverage/its-cooked`.
-  2. Set the build command to `npm run build` and the output directory to `dist`. No env vars are needed.
-  3. Every push to `main` deploys to `https://its-cooked.pages.dev`, and every PR gets a preview URL.
-- *GitHub Action:* `.github/workflows/cloudflare-pages.yml` deploys `main` to production and PRs to previews. Add two repo secrets:
-  - `CLOUDFLARE_API_TOKEN`: create one in Cloudflare → My Profile → API Tokens, with the **Cloudflare Pages: Edit** permission.
-  - `CLOUDFLARE_ACCOUNT_ID`.
+**Cloudflare (recommended)**. This deploys as a Worker with static assets, configured in `wrangler.toml`.
+- *Git integration, no tokens:*
+  1. In the Cloudflare dashboard go to **Workers & Pages → Create → Import a repository** and pick `builtonleverage/its-cooked`.
+  2. Set the build command to `npm run build` and the deploy command to `npx wrangler deploy` (the default).
+  3. Every push to the production branch redeploys to `https://its-cooked.<your-subdomain>.workers.dev`. You can add a custom domain under the Worker's Settings → Domains & Routes.
 - *From your machine:* `npx wrangler login`, then `npm run deploy:cloudflare`.
+- *GitHub Action (manual):* `.github/workflows/cloudflare.yml` needs two repo secrets, `CLOUDFLARE_API_TOKEN` (with the Workers Scripts: Edit permission) and `CLOUDFLARE_ACCOUNT_ID`.
 
 `public/_headers` makes sure the service worker and `index.html` are never served stale.
 

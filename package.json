@@ -11,7 +11,7 @@
     "test": "vitest run",
     "typecheck": "tsc -b",
     "icons": "node scripts/gen-icons.mjs",
-    "deploy:cloudflare": "npm run build && npx wrangler@4 pages deploy dist --project-name its-cooked --branch main --commit-dirty=true",
+    "deploy:cloudflare": "npm run build && npx wrangler@4 deploy",
     "build:artifact": "vite build --mode artifact && node scripts/make-artifact.mjs"
   },
   "dependencies": {

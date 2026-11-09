@@ -1,15 +1,12 @@
-name: Deploy to Cloudflare Pages
+name: Deploy to Cloudflare (Action)
 
+# Only needed if you deploy with GitHub Actions instead of Cloudflare's own Git integration.
+# Requires repo secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID.
 on:
-  push:
-    branches: [main]
-  pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
-  deployments: write
-  pull-requests: write
 
 jobs:
   deploy:
@@ -23,9 +20,8 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
-      - name: Deploy (main → production, PRs → preview URL)
-        uses: cloudflare/wrangler-action@v3
+      - uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=its-cooked --branch=${{ github.head_ref || github.ref_name }}
+          command: deploy
