@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 260" role="img" aria-label="Diagram: roll a disc, add filling, gather and seal, roll flat" font-family="system-ui, -apple-system, sans-serif">
+  <rect width="800" height="260" rx="18" fill="#FFF8F1"/>
+  <g font-size="20" fill="#3A2A20" text-anchor="middle" font-weight="600">
+    <text x="100" y="235">1. Roll disc</text><text x="300" y="235">2. Add filling</text><text x="500" y="235">3. Gather &amp; seal</text><text x="700" y="235">4. Roll flat</text>
+  </g>
+  <g fill="#E9C48A" stroke="#B9884A" stroke-width="3">
+    <circle cx="100" cy="115" r="62"/>
+    <circle cx="300" cy="115" r="62"/>
+    <path d="M455 150 q45 -110 90 0 z"/>
+    <ellipse cx="700" cy="115" rx="86" ry="78"/>
+  </g>
+  <g fill="#B84B7A" opacity="0.75"><circle cx="300" cy="115" r="30"/></g>
+  <g fill="#3E8E41"><circle cx="290" cy="105" r="4"/><circle cx="312" cy="122" r="4"/><circle cx="298" cy="128" r="3"/></g>
+  <g fill="none" stroke="#B9884A" stroke-width="3" stroke-linecap="round">
+    <path d="M480 85 l20 20 M520 85 l-20 20 M500 72 v30"/>
+  </g>
+  <g fill="#B84B7A" opacity="0.4"><circle cx="680" cy="100" r="5"/><circle cx="720" cy="130" r="5"/><circle cx="700" cy="90" r="4"/><circle cx="670" cy="140" r="4"/></g>
+  <g fill="#E8572A"><path d="M178 115 l14 -9 v18 z"/><path d="M378 115 l14 -9 v18 z"/><path d="M588 115 l14 -9 v18 z"/></g>
+</svg>
